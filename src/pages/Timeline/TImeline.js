@@ -1,12 +1,21 @@
 import React, { Component } from 'react';
 import API from '../../services/api';
 
+import Tweet from '../../components/Tweet/Tweet';
+
 import './Timeline.css';
 import twitterLogo from '../../twitter.svg';
 
 export default class Timeline extends Component {
   state = {
-    newTweet : ''
+    newTweet: '',
+    tweets: [],
+  };
+
+  async componentDidMount() {
+    const response = await API.get('tweets')
+
+    this.setState({ tweets: response.data });
   }
 
   handleChange = (event) => {
@@ -14,25 +23,26 @@ export default class Timeline extends Component {
   };
 
   handleNewTweet = async (event) => {
-    if (event.keyCode !== 13){
+    if (event.keyCode !== 13) {
       return;
     }
 
     const content = this.state.newTweet;
     const author = localStorage.getItem('@GoTwitter:username');
-  
+
     await API.post('tweets', { content, author })
-    
-    this.setState({ newTweet : ''})
+
+    this.setState({ newTweet: '' })
   };
 
-  render(){
+  render() {
+    const { tweets } = this.state;
     return (
       <div className="timeline-wrapper">
         <img height={24} src={twitterLogo} alt="Gotwitter" />
 
         <form>
-          <textarea 
+          <textarea
             onChange={this.handleChange}
             value={this.state.newTweet}
             onKeyDown={this.handleNewTweet}
@@ -40,6 +50,13 @@ export default class Timeline extends Component {
           />
         </form>
 
+        <ul className="tweet-list">
+          {tweets.map((tweet) => {
+            return (
+              <Tweet key={tweet._id} tweet={tweet} />
+            )
+          })}
+        </ul>
       </div>
     );
   }
